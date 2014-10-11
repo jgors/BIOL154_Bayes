@@ -23,10 +23,13 @@ summary(lm(y1000 ~ 1))
 
 
 ### 5.4. Analysis using WinBUGS
-library(R2WinBUGS)		# Load the R2WinBUGS library
-setwd("C:/_Marc Kery/_WinBUGS book/Naked code") # May have to adapt that
+library(coda); library(rjags); library(R2jags) #load the required libraries
 
-# Save BUGS description of the model to working directory
+rm(list=ls()) #resets your working directory
+setwd("/Users/nina/Documents/BIOL154_Bayes/week1") # May have to adapt that
+if(basename(getwd())!="week1"){cat("Plz change your working directory. It should be 'week1' in the BIOL154_Bayes github repo")}
+
+# Save BUGS/JAGS description of the model to working directory
 sink("model.txt")
 cat("
 model {
@@ -47,7 +50,7 @@ sink()
 
 # Package all the stuff to be handed over to WinBUGS
 # Bundle data
-win.data <- list(mass = y1000, nobs = length(y1000))
+jags.data <- list(mass = y1000, nobs = length(y1000))
 
 # Function to generate starting values
 inits <- function()
@@ -63,8 +66,8 @@ nb <- 1					# Number of draws to discard as burn-in
 nt <- 1					# Thinning rate
 
 # Start Gibbs sampler: Run model in WinBUGS and save results in object called out
-out <- bugs(data = win.data, inits = inits, parameters.to.save = params, model.file = "model.txt", 
-n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, debug = TRUE, DIC = TRUE, working.directory = getwd())
+out <- jags(data = jags.data, inits = inits, parameters.to.save = params, model.file = "model.txt", 
+n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, DIC = TRUE, working.directory = getwd())
 
 ls()
 
@@ -103,3 +106,11 @@ sd(out$sims.list$population.mean)
 sd(out$sims.list$population.sd)
 
 summary(lm(y1000 ~ 1))
+
+
+
+
+model1.mcmc <-as.mcmc(out)
+xyplot(model1.mcmc)
+densityplot(model1.mcmc)
+print(out)
