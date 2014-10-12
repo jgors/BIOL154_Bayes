@@ -2,10 +2,10 @@
 model {
 
 # Priors
- population.mean ~ dunif(0,5000)		# Normal parameterized by precision
+ population.mean ~ dnorm(350, 50)		# Normal parameterized by precision
  precision <- 1 / population.variance	# Precision = 1/variance
  population.variance <- population.sd * population.sd
- population.sd ~ dunif(0,100)
+ population.sd ~ dnorm(10,10)
 
 # Likelihood
  for(i in 1:nobs){
