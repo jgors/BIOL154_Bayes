@@ -8,7 +8,6 @@ setwd("/Users/nina/Documents/BIOL154_Bayes/week1") #You'll have to adapt that
 
 if(basename(getwd())!="week1"){cat("Plz change your working directory. It should be 'week1'")}
 
-
 ### 5.2. Data generation
 # Generate a sample of body mass measurements of male peregrines
 y1000 <- rnorm(n = 1000, mean = 600, sd = 30) # Sample of 1000 birds
@@ -19,7 +18,6 @@ hist(y1000, col = 'grey', xlim = xlim, main = ' Body mass (g) of 1000 male pereg
 
 ### 5.3. Analysis using R
 summary(lm(y1000 ~ 1))
-
 
 ### 5.4. Analysis using JAGS
 library(coda); library(rjags); library(R2jags) #load the required libraries
@@ -75,3 +73,55 @@ densityplot(model1.mcmc)
 print(model1)
 
 summary(lm(y1000 ~ 1)) #compare to least squares estimation
+
+#Change MCMC settings - increase number of draws and burn-in
+# MCMC settings
+nc <- 3					# Number of chains
+ni <- 10000				# Number of draws from posterior (for each chain)
+nb <- 1000				# Number of draws to discard as burn-in
+nt <- 1					# Thinning rate
+
+model1 <- jags(data = jags.data, inits = inits, parameters.to.save = params, model.file = "model.txt", n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, DIC = TRUE, working.directory = getwd())
+
+model1.mcmc <-as.mcmc(model1)
+xyplot(model1.mcmc)
+densityplot(model1.mcmc)
+print(model1)
+
+#Informative priors make a huge difference.
+# Save a new BUGS/JAGS description of the model, this time with informative priors, to working directory
+sink("model2.txt")
+cat("
+model {
+
+# Priors
+ population.mean ~ dnorm(500, 50)		# Normal parameterized by precision
+ precision <- 1 / population.variance	# Precision = 1/variance
+ population.variance <- population.sd * population.sd
+ population.sd ~ dnorm(10,10)
+
+# Likelihood
+ for(i in 1:nobs){
+    mass[i] ~ dnorm(population.mean, precision)
+ }
+}
+",fill=TRUE)
+sink()
+
+ls()
+
+#MCMC settings
+nc <- 3					# Number of chains
+ni <- 10000				# Number of draws from posterior (for each chain)
+nb <- 1000				# Number of draws to discard as burn-in
+nt <- 1					# Thinning ra
+
+# Use same MCMCsettings as above and start Gibbs sampler: Run model in JAGS and save results in object called model1
+model2 <- jags(data = jags.data, inits = inits, parameters.to.save = params, model.file = "model2.txt", n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, DIC = TRUE, working.directory = getwd())
+
+
+model2.mcmc <- as.mcmc(model2)
+xyplot(model2.mcmc)
+densityplot(model2.mcmc)
+model2
+
