@@ -67,7 +67,7 @@ model1
 names(model1)
 str(model1)
 
-model1.mcmc <-as.mcmc(out)
+model1.mcmc <-as.mcmc(model1)
 xyplot(model1.mcmc)
 densityplot(model1.mcmc)
 print(model1)
@@ -88,7 +88,7 @@ xyplot(model1.mcmc)
 densityplot(model1.mcmc)
 print(model1)
 
-#Informative priors make a huge difference.
+#Informative priors
 # Save a new BUGS/JAGS description of the model, this time with informative priors, to working directory
 sink("model2.txt")
 cat("
@@ -98,7 +98,7 @@ model {
  population.mean ~ dnorm(500, 50)		# Normal parameterized by precision
  precision <- 1 / population.variance	# Precision = 1/variance
  population.variance <- population.sd * population.sd
- population.sd ~ dnorm(10,10)
+ population.sd ~ dnorm(20,20)
 
 # Likelihood
  for(i in 1:nobs){
@@ -114,11 +114,10 @@ ls()
 nc <- 3					# Number of chains
 ni <- 10000				# Number of draws from posterior (for each chain)
 nb <- 1000				# Number of draws to discard as burn-in
-nt <- 1					# Thinning ra
+nt <- 1					# Thinning rate
 
-# Use same MCMCsettings as above and start Gibbs sampler: Run model in JAGS and save results in object called model1
+# Use same MCMCsettings as above and start Gibbs sampler: Run model in JAGS and save results in object called model2
 model2 <- jags(data = jags.data, inits = inits, parameters.to.save = params, model.file = "model2.txt", n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, DIC = TRUE, working.directory = getwd())
-
 
 model2.mcmc <- as.mcmc(model2)
 xyplot(model2.mcmc)
