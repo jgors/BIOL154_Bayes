@@ -2,29 +2,25 @@
 #        Model of the mean in JAGS from R                  #
 ###############################################################
 
-
+rm(list=ls()) #clear your workspace
+#set your working directory to the week1 folder in your github folder for this seminar.
+if(basename(getwd())!="week1"){cat("Plz change your working directory. It should be 'week1'")}
 
 ### 5.2. Data generation
-# Generate two samples of body mass measurements of male peregrines
-y10 <- rnorm(n = 10, mean = 600, sd = 30) # Sample of 10 birds
+# Generate a sample of body mass measurements of male peregrines
+
 y1000 <- rnorm(n = 1000, mean = 600, sd = 30) # Sample of 1000 birds
 
 # Plot data
 xlim = c(450, 750)
-par(mfrow = c(2,1))
-hist(y10, col = 'grey ', xlim = xlim, main = 'Body mass (g) of 10 male peregrines')
 hist(y1000, col = 'grey', xlim = xlim, main = ' Body mass (g) of 1000 male peregrines')
-
-
 
 ### 5.3. Analysis using R
 summary(lm(y1000 ~ 1))
 
-
-
 ### 5.4. Analysis using WinBUGS
 library(R2WinBUGS)		# Load the R2WinBUGS library
-setwd("C:/_Marc Kery/_WinBUGS book/Naked code") # May have to adapt that
+setwd("C:/_Marc Kery/_WinBUGS book/Naked code") 
 
 # Save BUGS description of the model to working directory
 sink("model.txt")
