@@ -2,23 +2,19 @@
 #        Model of the mean in JAGS from R                  #
 ###############################################################
 
-rm(list=ls()) #resets your working directory
-setwd("/Users/nina/Documents/BIOL154_Bayes/week1") # May have to adapt that
-if(basename(getwd())!="week1"){cat("Plz change your working directory. It should be 'week1' in the BIOL154_Bayes github repo")}
+rm(list=ls()) #clear your workspace
+#set your working directory to the week1 folder in your github folder for this seminar.
+setwd("/Users/nina/Documents/BIOL154_Bayes/week1") #You'll have to adapt that
 
+if(basename(getwd())!="week1"){cat("Plz change your working directory. It should be 'week1'")}
 
 ### 5.2. Data generation
-# Generate two samples of body mass measurements of male peregrines
-y10 <- rnorm(n = 10, mean = 600, sd = 30) # Sample of 10 birds
+# Generate a sample of body mass measurements of male peregrines
 y1000 <- rnorm(n = 1000, mean = 600, sd = 30) # Sample of 1000 birds
 
 # Plot data
 xlim = c(450, 750)
-par(mfrow = c(2,1))
-hist(y10, col = 'grey ', xlim = xlim, main = 'Body mass (g) of 10 male peregrines')
 hist(y1000, col = 'grey', xlim = xlim, main = ' Body mass (g) of 1000 male peregrines')
-
-
 
 ### 5.3. Analysis using R
 summary(lm(y1000 ~ 1))
@@ -62,28 +58,23 @@ ni <- 1000				# Number of draws from posterior (for each chain)
 nb <- 1					# Number of draws to discard as burn-in
 nt <- 1					# Thinning rate
 
-# Start Gibbs sampler: Run model in JAGS and save results in object called model1
-model1 <- jags(data = jags.data, inits = inits, parameters.to.save = params, model.file = "model.txt", n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, DIC = TRUE, working.directory = getwd())
+# Start Gibbs sampler: Run model in JAGS and save results in object called 'model1'
+model1 <- jags(data = jags.data, inits = inits, parameters.to.save = params, model.file = "model.txt", 
+n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, DIC = TRUE, working.directory = getwd())
 
-model1					# Produces a summary of the object
-
+ls()
+model1					
 names(model1)
 str(model1)
-
-hist(model1$summary[,8])			# Rhat values in the eighth column of the summary
-which(model1$summary[,8] > 1.1)		
-#To do:
-#Rhat
-#ACF
-
-summary(lm(y1000 ~ 1))
 
 model1.mcmc <-as.mcmc(model1)
 xyplot(model1.mcmc)
 densityplot(model1.mcmc)
 print(model1)
 
-#Change MCMC settings
+summary(lm(y1000 ~ 1)) #compare to least squares estimation
+
+#Change MCMC settings - increase number of draws and burn-in
 # MCMC settings
 nc <- 3					# Number of chains
 ni <- 10000				# Number of draws from posterior (for each chain)
@@ -97,7 +88,7 @@ xyplot(model1.mcmc)
 densityplot(model1.mcmc)
 print(model1)
 
-#Informative priors make a huge difference.
+#Informative priors
 # Save a new BUGS/JAGS description of the model, this time with informative priors, to working directory
 sink("model2.txt")
 cat("
@@ -107,7 +98,7 @@ model {
  population.mean ~ dnorm(500, 50)		# Normal parameterized by precision
  precision <- 1 / population.variance	# Precision = 1/variance
  population.variance <- population.sd * population.sd
- population.sd ~ dnorm(10,10)
+ population.sd ~ dnorm(20,20)
 
 # Likelihood
  for(i in 1:nobs){
@@ -123,13 +114,13 @@ ls()
 nc <- 3					# Number of chains
 ni <- 10000				# Number of draws from posterior (for each chain)
 nb <- 1000				# Number of draws to discard as burn-in
-nt <- 1					# Thinning ra
+nt <- 1					# Thinning rate
 
-# Use same MCMCsettings as above and start Gibbs sampler: Run model in JAGS and save results in object called model1
+# Use same MCMCsettings as above and start Gibbs sampler: Run model in JAGS and save results in object called model2
 model2 <- jags(data = jags.data, inits = inits, parameters.to.save = params, model.file = "model2.txt", n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, DIC = TRUE, working.directory = getwd())
-
 
 model2.mcmc <- as.mcmc(model2)
 xyplot(model2.mcmc)
 densityplot(model2.mcmc)
 model2
+
